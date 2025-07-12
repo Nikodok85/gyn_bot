@@ -1,32 +1,30 @@
-import telebot
-import os
 from flask import Flask, request
+import requests
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = os.getenv("CHANNEL_ID")
-
-bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
 
-@bot.message_handler(commands=['start'])
-def start_message(message):
-    bot.send_message(message.chat.id, "Бот работает ✅ Напиши свой анонимный вопрос.")
+TOKEN = '8027662725:AAEAydbYQxsA2Zbx0acgUlCzTgymzb4VBkM'
+CHAT_ID = '6940287840'  # ID твоего Telegram-канала
 
-@bot.message_handler(func=lambda message: True, content_types=['text'])
-def forward_message(message):
-    if message.chat.type == "private":
-        bot.send_message(CHANNEL_ID, f"❓ Анонимный вопрос: «{message.text}»")
+@app.route('/')
+def index():
+    return 'Бот запущен!'
 
-@app.route('/' + BOT_TOKEN, methods=['POST'])
-def getMessage():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "!", 200
-
-@app.route("/")
+@app.route(f'/{TOKEN}', methods=['POST'])
 def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url=f"https://gyn-bot.onrender.com/{BOT_TOKEN}")
-    return "!", 200
+    data = request.json
+    if 'message' in data and 'text' in data['message']:
+        text = data['message']['text']
+        send_message(f"❓ Анонимный вопрос: «{text}»")
+    return {'ok': True}
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+def send_message(text):
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    payload = {
+        'chat_id': CHAT_ID,
+        'text': text
+    }
+    requests.post(url, json=payload)
+
+if __name__ == '__main__':
+    app.run()
