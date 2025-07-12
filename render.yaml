@@ -1,0 +1,13 @@
+
+services:
+  - type: web
+    name: gyn_bot
+    env: python
+    buildCommand: ""
+    startCommand: "python main.py"
+    plan: free
+    envVars:
+      - key: BOT_TOKEN
+        value: 8027662725:AAEAydbYQxsA2Zbx0acgUlCzTgymzb4VBkM
+      - key: CHANNEL_ID
+        value: -1006940287840
